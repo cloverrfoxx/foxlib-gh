@@ -1,0 +1,71 @@
+//-- Custom Logging
+//-- Imported by FoxLib
+
+//-- : -= logic starts here =-
+
+_Logger=function()
+    locals["print"]=@print
+    locals["time"]=@time
+    logger = {}
+
+    info={}
+    info.open=function()
+        return "["+time+"] <#7cf>Info : "
+    end function
+    info.close="</color>"
+
+    debug={}
+    debug.open=function()
+        return "["+time+"] Debug: "
+    end function
+    debug.close=""
+
+    warn={}
+    warn.open=function()
+        return "["+time+"] <#ff5>Warn : "
+    end function
+    warn.close="</color>"
+
+    err={}
+    err.open=function()
+        return "["+time+"] <#f55>Error: "
+    end function
+    err.close="</color>"
+
+    logger.format_info=function(open="", close="")
+        outer.info.open=open
+        outer.info.close=close
+    end function
+    logger.format_debug=function(open="", close="")
+        outer.debug.open=open
+        outer.debug.close=close
+    end function
+    logger.format_warn=function(open="", close="")
+        outer.warn.open=open
+        outer.warn.close=close
+    end function
+    logger.format_err=function(open="", close="")
+        outer.err.open=open
+        outer.err.close=close
+    end function
+
+    logger.info=function(o)
+        print outer.info.open + o + outer.info.close
+    end function
+
+    logger.debug=function(o)
+        print outer.debug.open + o + outer.debug.close
+    end function
+
+    logger.warn=function(o)
+        print outer.warn.open + o + outer.warn.close
+    end function
+
+    logger.err=function(o)
+        print outer.err.open + o + outer.err.close
+    end function
+
+    return logger
+end function
+
+Logger = _Logger

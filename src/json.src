@@ -1,0 +1,238 @@
+json={}
+
+//-- Credits to JoeStrout for the serializer and deserializer
+json.Serialize=function(value,compact=0)
+
+    toJSON=function(value,compact=0,indent=0)
+        if @value isa funcRef then return """<function>"""
+        if value == null then return "null"
+        if value isa number then return str(value)
+        if value isa string then return """" + escape(value) + """"
+        if value isa list then return _listToJSON(value,compact,indent)
+        if value isa map then return _mapToJSON(value,compact,indent)
+    end function
+
+    hexToInt=function(s)
+        result=0
+        for c in s
+            result=result*16+_hexDigitMap[c]
+        end for
+        return result
+    end function
+
+    escape=function(s)
+        for i in _escapeIndexes
+            s=s.replace(_escapeFrom[i], _escapeTo[i])
+        end for
+        return s
+    end function
+
+    _listToJSON=function(lst,compact,indent)
+        ws=(_eol + "  "*(indent+1)) * (not compact)
+        parts=["[", ws]
+        first=1
+        for i in lst
+            if not first then
+                push parts, ","
+                push parts, ws
+            end if
+            push parts, toJSON(i,compact,indent)
+            first=0
+        end for
+        if not compact then push parts, _eol + "  " * indent
+        push parts, "]"
+        return join(parts, "")
+    end function
+
+    _mapToJSON=function(lst,compact,indent)
+        ws=(_eol + "  "*(indent+1)) * (not compact)
+        parts=["{",ws]
+        first=1
+        for kv in lst
+            if not first then
+                push parts, ","
+                push parts, ws
+            end if
+            push parts, toJSON(kv["key"],compact,indent+1)
+            push parts, ":"
+            if not compact then push parts, " "
+            push parts, toJSON(kv["value"],compact,indent+1)
+            first=0
+        end for
+        if not compact then push parts, _eol + "  " * indent
+        push parts, "}"
+        return join(parts, "")
+    end function
+
+    _eol=char(13)
+    _hexDigitMap={}
+    for i in range(0,15)
+        if i<10 then
+            _hexDigitMap[str(i)]=i
+        else
+            _hexDigitMap[char(55+i)]=i
+            _hexDigitMap[char(87+i)]=i
+        end if
+    end for
+
+    _escapeFrom = ["\\", """", char(8), char(9), char(10), char(12), char(13)]
+    _escapeTo = ["\\", "\""", "\b","\t","\n","\f","\r"]
+    _escapeIndexes = _escapeFrom.indexes
+
+    return toJSON(@value,compact)
+end function
+
+json.Deserialize=function(source=null)
+    if not @source isa string then return 0
+    if not len(source) then return 0
+
+    unescape = function(s)
+        result = []
+        i = 0
+        maxi = len(s)
+        while i < maxi
+            di = 1
+            if s[i] == "\" then
+                di = 2
+                c = s[i+1]
+                if c == "b" then
+                    push result, char(8)
+                else if c == "t" then
+                    push result, char(9)
+                else if c == "n" then
+                    push result, char(10)
+                else if c == "f" then
+                    push result, char(12)
+                else if c == "r" then
+                    push result, char(13)
+                else if c == "u" then
+                    // Unicode code point (must always be 4 digits)
+                    hex = s[i+2:i+6]
+                    push result, char(hexToInt(hex))
+                    di = 6
+                else
+                    push result, c
+                end if
+            else
+                push result, s[i]
+            end if
+            i = i + di
+        end while
+        return join(result, "")
+    end function
+
+
+    _sourceLen=len(source)
+    _p=0
+
+    whitespace = " " + char(9) + char(10) + char(13)
+    _skipWhitespace=function()
+        while _p < _sourceLen
+            c=source[_p]
+            if indexOf(whitespace,c)==null then break
+            outer._p=_p+1
+        end while
+    end function
+
+    _parseElement=function()
+        return _parseValue
+    end function
+
+    _parseValue=function()
+        _skipWhitespace
+        c=source[_p]
+        if c=="""" then return _parseString
+        if indexOf("0123456789-.",c)!=null then return _parseNumber
+        if c=="[" then return _parseList
+        if c=="{" then return _parseMap
+        if c=="t" and source[_p:_p+4]=="true" then
+            outer._p=_p+4
+            return 1
+        end if
+        if c=="f" and source[_p:_p+5]=="false" then
+            outer._p=_p+5
+            return 0
+        end if
+        if c=="n" and source[_p:_p+4]=="null" then
+            outer._p=_p+4
+            return null
+        end if
+    end function
+
+    _parseList=function()
+        outer._p=_p+1
+        _skipWhitespace
+        result=[]
+        while _p<_sourceLen
+            c=source[_p]
+            if c=="]" then break
+            push(result, _parseElement)
+            _skipWhitespace
+            c=source[_p]
+            if c=="," then
+                outer._p=_p+1
+                _skipWhitespace
+            end if
+        end while
+        outer._p=_p+1
+        return result
+    end function
+
+    _parseMap=function()
+        outer._p=_p+1
+        _skipWhitespace
+        result={}
+        while _p<_sourceLen
+            c=source[_p]
+            if c=="}" then break
+            key=_parseElement
+            _skipWhitespace
+
+            if source[_p]!=":" then return null
+            outer._p=_p+1
+            _skipWhitespace
+
+            value=_parseElement
+            result[key]=value
+
+            c=source[_p]
+            if c=="," then
+                outer._p=_p+1
+                _skipWhitespace
+            end if
+        end while
+        outer._p=_p+1
+        return result
+    end function
+
+    _parseString=function()
+        outer._p=_p+1
+        startPos=_p
+        anyEscape=0
+        while _p<_sourceLen
+            c=source[_p]
+            outer._p=_p+1
+            if c=="""" then break
+            if c=="\" then
+                anyEscape=1
+                outer._p=_p+1
+            end if
+        end while
+        result=source[startPos:_p-1]
+        if anyEscape then result = unescape(result)
+        return result
+    end function
+
+    _parseNumber=function()
+        startPos=_p
+        while _p<_sourceLen
+            c=source[_p]
+            if "0123456789+-.eE".indexOf(c)==null then break
+            outer._p=_p+1
+        end while
+        result=val(source[startPos:_p])
+        return result
+    end function
+
+    return _parseElement
+end function
