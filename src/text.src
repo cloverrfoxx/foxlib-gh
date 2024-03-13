@@ -1,0 +1,65 @@
+//Text Formatting LIB
+
+string.color = function(hex)
+    return "<color=#"+hex+">"+self+"</color>"
+end function
+
+string.mark = function(hex)
+    return "<mark=#"+hex+">"+self+"</color>"
+end function
+
+string.bold=function()
+    return "<b>"+self+"</b>"
+end function
+
+string.italic=function()
+    return "<i>"+self+"</i>"
+end function
+
+string.underline=function()
+    return "<u>"+self+"</u>"
+end function
+
+string.strike=function()
+    return "<s>"+self+"</s>"
+end function
+
+string.center=function()
+    return "<align=center>"+self+"</align>"
+end function
+
+string.right=function()
+    return "<align=right>"+self+"</align>"
+end function
+
+string.size=function(percent)
+    return "<size="+percent+"%>"+self+"</size>"
+end function
+
+string.pos=function(percent)
+    return "<pos="+percent+"%>"+self+"</size>"
+end function
+
+string.cspace=function(spacing)
+    return "<cspace="+spacing+"em>"+self+"</cspace>"
+end function
+
+string.rotate=function(rotation)
+    return "<rotate="+rotation+"deg>"+self+"</rotate>"
+end function
+
+string.altfont=function()
+    return "<font=""LiberationSans SDF"">"+self+"</font>"
+end function
+
+string.noparse=function()
+    return "<noparse>"+self+"</noparse>"
+end function
+
+string.sub=function()
+    return "<sub>"+self+"</sub>"
+end function
+
+string.sup=function()
+    return "<sup>"+self+"</sup>"
+end function

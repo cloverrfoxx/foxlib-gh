@@ -1,0 +1,62 @@
+list.clone = function()
+    result = []
+    for i in self.indexes
+        if self[i] isa list or self[i] isa map then
+            result.push(self[i].clone)
+        else
+            result.push(self[i])
+        end if
+    end for
+    return result
+end function
+
+map.clone = function()
+    result={}
+    for i in self.indexes
+        if self[i] isa list or self[i] isa map then
+            if @i isa list or @i isa map then i = @i.clone
+            result[i] = self[i].clone
+        else
+            if @i isa list or @i isa map then i = @i.clone
+            result[i] = self[i]
+        end if
+    end for
+    return result
+end function
+
+list.apply = function(f)
+    result = []
+    for i in self
+        result.push(f(@i))
+    end for
+    return result
+end function
+
+map.apply = function(f)
+    result={}
+    for kv in self
+        result[@kv.key] = f(@kv.value)
+    end for
+    return result
+end function
+
+string.alpha = function()
+    alpha = "abcdefghijklmnopqrstuvwxyz"
+    return alpha+alpha.upper
+end function
+
+string.numeric = function()
+    return "0123456789"
+end function
+
+string.alphanum = function()
+    return string.alpha + string.numeric
+end function
+
+string.whitespace = function()
+    return [" ", "	", char(10)]
+end function
+
+string.special = function()
+    return "`~!@#$%^&*()-_=+[{}]\\|;:""',<.>/?"
+end function
