@@ -1,6 +1,6 @@
 json={}
 
-//-- Credits to JoeStrout for the serializer and deserializer
+//-- Credits to JoeStrout for the serializer and deserializer -- https://forums.miniscript.org/d/117-a-json-parser-for-and-in-miniscript
 json.Serialize=function(value,compact=0)
 
     toJSON=function(value,compact=0,indent=0)
