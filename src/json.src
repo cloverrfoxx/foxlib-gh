@@ -1,6 +1,6 @@
 json={}
 
-//-- Credits to JoeStrout for the serializer and deserializer -- https://forums.miniscript.org/d/117-a-json-parser-for-and-in-miniscript
+//-- Credits to JoeStrout for the serializer and deserializer
 json.Serialize=function(value,compact=0)
 
     toJSON=function(value,compact=0,indent=0)
@@ -10,14 +10,6 @@ json.Serialize=function(value,compact=0)
         if value isa string then return """" + escape(value) + """"
         if value isa list then return _listToJSON(value,compact,indent)
         if value isa map then return _mapToJSON(value,compact,indent)
-    end function
-
-    hexToInt=function(s)
-        result=0
-        for c in s
-            result=result*16+_hexDigitMap[c]
-        end for
-        return result
     end function
 
     escape=function(s)
@@ -39,9 +31,8 @@ json.Serialize=function(value,compact=0)
             push parts, toJSON(i,compact,indent)
             first=0
         end for
-        if not compact then push parts, _eol + "  " * indent
-        push parts, "]"
-        return join(parts, "")
+        ws=(_eol + "  "*(indent)) * (not compact)
+        return join(parts + [ws, "]"], "")
     end function
 
     _mapToJSON=function(lst,compact,indent)
@@ -59,21 +50,11 @@ json.Serialize=function(value,compact=0)
             push parts, toJSON(kv["value"],compact,indent+1)
             first=0
         end for
-        if not compact then push parts, _eol + "  " * indent
-        push parts, "}"
-        return join(parts, "")
+        ws=(_eol + "  "*(indent)) * (not compact)
+        return join(parts + [ws, "}"], "")
     end function
 
     _eol=char(13)
-    _hexDigitMap={}
-    for i in range(0,15)
-        if i<10 then
-            _hexDigitMap[str(i)]=i
-        else
-            _hexDigitMap[char(55+i)]=i
-            _hexDigitMap[char(87+i)]=i
-        end if
-    end for
 
     _escapeFrom = ["\\", """", char(8), char(9), char(10), char(12), char(13)]
     _escapeTo = ["\\", "\""", "\b","\t","\n","\f","\r"]
@@ -86,6 +67,12 @@ json.Deserialize=function(source=null)
     if not @source isa string then return 0
     if not len(source) then return 0
 
+    _escapeMap={"b":char(8),
+            "t":char(9),
+            "n":char(10),
+            "f":char(12),
+            "r":char(13)}
+
     unescape = function(s)
         result = []
         i = 0
@@ -95,20 +82,22 @@ json.Deserialize=function(source=null)
             if s[i] == "\" then
                 di = 2
                 c = s[i+1]
-                if c == "b" then
-                    push result, char(8)
-                else if c == "t" then
-                    push result, char(9)
-                else if c == "n" then
-                    push result, char(10)
-                else if c == "f" then
-                    push result, char(12)
-                else if c == "r" then
-                    push result, char(13)
+                if hasIndex(_escapeMap,c) then
+                    push(result,_escapeMap[c])
+                // if c == "b" then
+                //     push result, char(8)
+                // else if c == "t" then
+                //     push result, char(9)
+                // else if c == "n" then
+                //     push result, char(10)
+                // else if c == "f" then
+                //     push result, char(12)
+                // else if c == "r" then
+                //     push result, char(13)
                 else if c == "u" then
                     // Unicode code point (must always be 4 digits)
                     hex = s[i+2:i+6]
-                    push result, char(hexToInt(hex))
+                    push result, char(xtod(hex))
                     di = 6
                 else
                     push result, c
@@ -121,6 +110,23 @@ json.Deserialize=function(source=null)
         return join(result, "")
     end function
 
+    xtod=function(s)
+        result=0
+        for c in s
+            result=result*16+_hexDigitMap[c]
+        end for
+        return result
+    end function
+
+    _hexDigitMap={}
+    for i in range(0,15)
+        if i<10 then
+            _hexDigitMap[str(i)]=i
+        else
+            _hexDigitMap[char(55+i)]=i
+            _hexDigitMap[char(87+i)]=i
+        end if
+    end for
 
     _sourceLen=len(source)
     _p=0
@@ -193,6 +199,7 @@ json.Deserialize=function(source=null)
             _skipWhitespace
 
             value=_parseElement
+            _skipWhitespace
             result[key]=value
 
             c=source[_p]
