@@ -1,39 +1,35 @@
 //-- Result Handling LIB
 
-Result = {}
-
-Result.is_ok = function()
-    for kv in self
-        if self["key"]=="value" then return 1
-    end for
-    return 0
-end function
-
-Result.is_err = function()
-    for kv in self
-        if self["key"]=="error" then return 1
-    end for
-    return 0
-end function
-
-Result.unwrap = function()
-    if self.is_ok then return self.value
-    return Err("Tried to unwrap an Err value")
-end function
-
-Result.unwrap_err = function()
-    if self.is_err then return self.error
-    return Err("Tried to unwrap_err an Ok value")
-end function
-
 Ok = function(value = 0)
-    result = new Result
-    result.value = value
+    Err=@Err
+    result = {}
+    result.is_ok = 1
+    result.is_err = 0
+
+    result.unwrap = function
+        return outer["value"]
+    end function
+
+    result.unwrap_err = function
+        return Err("Tried to unwrap_err an Ok value")
+    end function
+
     return result
 end function
 
 Err = function(error = 0)
-    result = new Result
-    result.error = error
+    Err=@Err
+    result = {}
+    result.is_ok = 0
+    result.is_err = 1
+
+    result.unwrap = function
+        return Err("Tried to unwrap an Ok value")
+    end function
+
+    result.unwrap_err = function
+        return outer["error"]
+    end function
+
     return result
 end function
