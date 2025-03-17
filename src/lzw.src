@@ -40,11 +40,11 @@ lzw=function(st=null,type=null)
         for i in range(0,length-1)
             c=input[i]
             wc=word+c
-            if not (basedictcompress.hasIndex(wc) or dict.hasIndex(wc)) then
+            if not (hasIndex(basedictcompress, wc) or hasIndex(dict, wc)) then
                 write=null
-                if basedictcompress.hasIndex(word) then
+                if hasIndex(basedictcompress, word) then
                     write=basedictcompress[word]
-                else if dict.hasIndex(word) then
+                else if hasIndex(dict, word) then
                     write=dict[word]
                 end if
                 if not write then return 0
@@ -60,7 +60,7 @@ lzw=function(st=null,type=null)
                 word=wc
             end if
         end for
-        if basedictcompress.hasIndex(word) then result.push(basedictcompress[word]) else result.push(dict[word])
+        if hasIndex(basedictcompress, word) then result.push(basedictcompress[word]) else result.push(dict[word])
         resultLen=result.len
         if length <= resultLen then return "u"+input
         return result.join("")
@@ -103,25 +103,25 @@ lzw=function(st=null,type=null)
         result=[]
         last=input[0:2]
 
-        if basedictdecompress.hasIndex(last) then
+        if hasIndex(basedictdecompress, last) then
             result.push(basedictdecompress[last])
-        else if dict.hasIndex(last) then
+        else if hasIndex(dict, last) then
             result.push(dict[last])
         end if
 
         for i in range(2,length-1,2)
             code=input[i:i+2]
             lastStr=null
-            if basedictdecompress.hasIndex(last) then
+            if hasIndex(basedictdecompress, last) then
                 lastStr=basedictdecompress[last]
-            else if dict.hasIndex(last) then
+            else if hasIndex(dict, last) then
                 lastStr=dict[last]
             end if
             if lastStr == null then return 0
 
-            if basedictdecompress.hasIndex(code) then
+            if hasIndex(basedictdecompress, code) then
                 toAdd=basedictdecompress[code]
-            else if dict.hasIndex(code) then
+            else if hasIndex(dict, code) then
                 toAdd=dict[code]
             else
                 toAdd=0
