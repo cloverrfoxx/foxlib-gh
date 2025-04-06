@@ -1,11 +1,11 @@
 //Text Formatting LIB
 
 string.color = function(hex)
-    return "<color=#"+hex+">"+self+"</color>"
+    return "<#"+hex+">"+self+"</color>"
 end function
 
 string.mark = function(hex)
-    return "<mark=#"+hex+">"+self+"</color>"
+    return "<mark=#"+hex+">"+self+"</mark>"
 end function
 
 string.bold=function()
@@ -37,7 +37,7 @@ string.size=function(percent)
 end function
 
 string.pos=function(percent)
-    return "<pos="+percent+"%>"+self+"</size>"
+    return "<pos="+percent+"%>"+self+"</pos>"
 end function
 
 string.cspace=function(spacing)
