@@ -1,3 +1,5 @@
+//-- i ported the LZW implementation from here: `https://github.com/Rochet2/lualzw` to miniscript, so check it out
+
 lzw=function(st=null,type=null)
     basedictcompress={}
     basedictdecompress={}
