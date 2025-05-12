@@ -24,7 +24,7 @@ Err = function(error = 0)
     result.is_err = 1
 
     result.unwrap = function
-        return Err("Tried to unwrap an Ok value")
+        return Err("Tried to unwrap an Err value")
     end function
 
     result.unwrap_err = function
